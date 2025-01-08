@@ -1,2 +1,2 @@
 # PythonRagServer
-Classic RAG with reranker + hybrid search
+Sample Classic RAG with reranker + hybrid search
