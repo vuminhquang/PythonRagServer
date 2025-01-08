@@ -1,0 +1,32 @@
+# Web Framework
+fastapi>=0.100.0
+uvicorn>=0.22.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+python-multipart
+python-dotenv>=0.19.0  # Added for env configuration
+
+# ML and Vector Search
+sentence-transformers
+faiss-cpu  # Use faiss-gpu for GPU support
+torch>=2.0.0
+transformers>=4.30.0
+rank-bm25>=0.2.2  # Added for hybrid search
+
+# Text Processing
+spacy>=3.0.0
+langdetect>=1.0.9
+PyPDF2>=3.0.0
+tqdm>=4.65.0
+jieba>=0.42.1  # Added for Chinese text segmentation
+rich>=10.0.0  # For beautiful terminal output
+
+# Core dependencies
+pyvi>=0.1.1
+
+# Language specific models
+en-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/en_core_web_sm-3.6.0/en_core_web_sm-3.6.0.tar.gz
+vi-core-news-lg @ https://gitlab.com/trungtv/vi_spacy/-/raw/master/packages/vi_core_news_lg-3.6.0/dist/vi_core_news_lg-3.6.0.tar.gz
+zh-core-web-sm @ https://github.com/explosion/spacy-models/releases/download/zh_core_web_sm-3.6.0/zh_core_web_sm-3.6.0.tar.gz
+ja-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/ja_core_news_sm-3.6.0/ja_core_news_sm-3.6.0.tar.gz
+ko-core-news-sm @ https://github.com/explosion/spacy-models/releases/download/ko_core_news_sm-3.6.0/ko_core_news_sm-3.6.0.tar.gz
