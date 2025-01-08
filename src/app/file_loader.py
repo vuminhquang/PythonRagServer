@@ -18,6 +18,7 @@ from rich.progress import (
 )
 from app.models import Document, DocumentList
 from app.service import RAGService
+from app.config import settings
 
 # Configure logging and rich console
 logging.basicConfig(level=logging.INFO)
@@ -44,8 +45,12 @@ class FileLoader:
             signal.signal(signal.SIGINT, self.handle_interrupt)
             signal.signal(signal.SIGTERM, self.handle_interrupt)
 
-    def create_chunks(self, text: str, chunk_size: int = 500, overlap: int = 100, max_chunks: int = 1000) -> List[str]:
+    def create_chunks(self, text: str, chunk_size: int = None, overlap: int = None, max_chunks: int = 1000) -> List[str]:
         """Create overlapping chunks of text with memory limits"""
+        # Use settings from .env, fallback to defaults if not specified
+        chunk_size = chunk_size or settings.CHUNK_SIZE
+        overlap = overlap or settings.CHUNK_OVERLAP
+        
         chunks = []
         start = 0
         text_len = len(text)
@@ -71,37 +76,25 @@ class FileLoader:
         return chunks
 
     async def process_pdf(self, file_path: str, progress: Progress, task_id: int) -> List[Dict]:
-        """Process a PDF file with improved chunking and progress display"""
+        """Process a PDF file with simplified progress display"""
         documents = []
         try:
             with open(file_path, 'rb') as file:
                 pdf_reader = PyPDF2.PdfReader(file)
                 total_pages = len(pdf_reader.pages)
                 
-                # Set total for the task and update description
-                progress.update(
-                    task_id, 
-                    total=total_pages, 
-                    completed=0,
-                    description=f"Processing page 0/{total_pages}"  # Initial description
-                )
+                # Set total for the task
+                progress.update(task_id, total=total_pages, completed=0)
                 
                 for page_num, page in enumerate(pdf_reader.pages, 1):
                     if self.shutdown_flag:
                         return documents
 
-                    # Update progress with current page
-                    progress.update(
-                        task_id,
-                        description=f"Processing page {page_num}/{total_pages}",
-                        completed=page_num-1
-                    )
-                    
                     try:
                         text = page.extract_text()
                         if text.strip():
                             text = ' '.join(text.split())
-                            chunks = self.create_chunks(text, chunk_size=500, overlap=50, max_chunks=100)
+                            chunks = self.create_chunks(text, max_chunks=1000)
                             
                             for chunk_num, chunk in enumerate(chunks, 1):
                                 documents.append({
@@ -119,11 +112,7 @@ class FileLoader:
                         continue
                     
                     # Update progress after processing each page
-                    progress.update(
-                        task_id, 
-                        completed=page_num,
-                        description=f"Processing page {page_num}/{total_pages}"
-                    )
+                    progress.update(task_id, completed=page_num)
                     await asyncio.sleep(0.01)
                     
         except Exception as e:
@@ -133,7 +122,7 @@ class FileLoader:
         return documents
 
     async def scan_upload_folder(self, folder_path: str = "uploads") -> List[Dict]:
-        """Scan the upload folder for documents with nice progress display."""
+        """Scan the upload folder for documents with simplified progress display."""
         documents = []
         
         await self.setup_signal_handlers()
@@ -148,7 +137,6 @@ class FileLoader:
             TextColumn("[progress.description]{task.description}"),
             BarColumn(),
             TextColumn("[progress.percentage]{task.percentage:>3.0f}%"),
-            MofNCompleteColumn(),
             TimeRemainingColumn(),
             console=console,
             expand=True,
